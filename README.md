@@ -48,7 +48,7 @@ This system helps landowners maintain environmental compliance by:
 User Query
     │
     ├─► FastAPI (/agent endpoint)
-    │   ├─► Agent 2 (Web Search) - SYNC, returns fast (2-5s)
+    │   ├─► Agent 2 (Web Search) - SYNC, returns fast (5-10s)
     │   └─► Trigger async admin analysis
     │
     └─► Background Admin Analysis (async)
@@ -61,7 +61,7 @@ User Query
 ## Features
 
 ### Query Processing
-- **Fast User Response**: Web-only search returns in 2-5 seconds
+- **Fast User Response**: Web-only search returns in 5-10 seconds
 - **Comprehensive Analysis**: Full RAG + gap analysis in background
 - **Conversation Context**: Maintains conversation history for follow-up questions
 - **Source Citations**: All answers include source documents/URLs
