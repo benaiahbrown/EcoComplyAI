@@ -33,8 +33,9 @@ flowchart TD
     Upload --> Worker
 ```
 
-<!-- SCREENSHOT: Add screenshot of the main query interface showing a compliance question and response here -->
-![Screenshot](assets/screenshot-query-interface.png)
+![Home](assets/home.png)
+
+![Chat Interface](assets/chat_conversation_ui.jpg)
 
 ## What It Does
 
@@ -53,8 +54,13 @@ EcoComply AI helps landowners maintain environmental compliance by searching an 
 
 ## Usage Examples
 
-<!-- SCREENSHOT: Add screenshot of the admin dashboard showing gap analysis results here -->
-![Screenshot](assets/screenshot-admin-dashboard.png)
+![RAG Agent Analytics](assets/rag_agent_analytics.png)
+
+![Search Agent Evals](assets/search_agent_evals.png)
+
+![Query-by-Query Diagnostics](assets/query-by-query-diagnostics.jpg)
+
+![Document Queue](assets/document_queue.jpg)
 
 **Sample query and response:**
 
