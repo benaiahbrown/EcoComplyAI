@@ -103,7 +103,7 @@ EcoComply AI helps landowners maintain environmental compliance by searching an 
 
 ## Video Walkthrough
 
-[Watch the full demo on Loom](https://www.loom.com/share/214f29b6475d4a5cbf31975dd109f383)
+[Watch the full demo on Loom](https://www.loom.com/share/470bba944dd74130a011e82f03b449b4)
 
 ## Results / Outcomes
 
