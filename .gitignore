@@ -1,0 +1,47 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+config/secrets.*
+.DS_Store
+assets/.DS_Store
+backend/.DS_Store
+
+# Local backup
+.git-backup/
+
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Supabase (empty local config)
+supabase/
+
+# Local data
+backend/chroma_db/
+backend/legal_docs/
+
+# Internal / deploy instructions
+GITHUB_DEPLOY*.TXT
+WAT_Claude.MD.txt
+CLAUDE.md
+
+# Internal notes / scratch docs
+LOVABLE_INTEGRATION_CHECKLIST.md
+LOVABLE_PROMPT_REVIEW.md
+NGROK_SETUP.md
+backend/check_users.sql
+backend/create_test_admin.py
+backend/OAUTH_TEST_INSTRUCTIONS.md
+backend/QUICK_TEST.md
+backend/TESTING_GUIDE.md
+backend/test_admin_endpoint.py
+backend/test_oauth.html
