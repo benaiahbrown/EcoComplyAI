@@ -20,6 +20,9 @@ openrouter_client = OpenAI(
 # Initialize Gemini client for web search
 GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
 
+# Web search provider selection (gemini or tavily)
+WEB_SEARCH_PROVIDER = os.getenv("WEB_SEARCH_PROVIDER", "gemini").lower()
+
 def strip_markdown(text: str) -> str:
     """Strip markdown formatting from text to prevent formatting corruption in conversation history"""
     if not text:
@@ -138,14 +141,86 @@ async def search_rag_only(query: str, conversation_history: List[Dict] = None) -
             'confidence': 'none'
         }
 
-# ===== AGENT 2: WEB SEARCH ONLY =====
-async def search_web_only(query: str, conversation_history: List[Dict] = None) -> dict:
-    """Agent 2: Search web using Gemini 2.5 Flash with Google grounding
-    
+# ===== AGENT 2: WEB SEARCH (TAVILY) =====
+async def search_web_tavily(query: str, conversation_history: List[Dict] = None) -> dict:
+    """Agent 2 (Tavily): Search web using Tavily search API
+
     Args:
         query: The current question to search
         conversation_history: Optional list of previous Q&A pairs for context
     """
+    from tavily import AsyncTavilyClient
+
+    print(f"🌐 Agent 2: Searching web with Tavily...")
+    if conversation_history:
+        print(f"   💬 Using conversation context ({len(conversation_history)} previous exchanges)")
+
+    # Build enriched query with conversation context
+    enriched_query = query
+    if conversation_history:
+        conv_lines = []
+        for entry in conversation_history:
+            user_q = entry.get('user_query', '')
+            if user_q:
+                conv_lines.append(user_q)
+        if conv_lines:
+            # Prepend recent context to improve search relevance
+            context_str = "; ".join(conv_lines[-3:])
+            enriched_query = f"{context_str}; {query}"
+        # Tavily queries should be under 400 chars
+        enriched_query = enriched_query[:400]
+
+    try:
+        tavily_client = AsyncTavilyClient()
+        response = await tavily_client.search(
+            query=enriched_query,
+            max_results=10,
+            search_depth="advanced",
+            topic="general",
+        )
+
+        answer = response.get("answer", "") or ""
+        web_sources = []
+        for result in response.get("results", []):
+            web_sources.append({
+                'url': result.get('url', ''),
+                'title': result.get('title', 'Unknown'),
+            })
+
+        # If Tavily didn't return a synthesized answer, build one from result content
+        if not answer:
+            snippets = [r.get('content', '') for r in response.get("results", []) if r.get('content')]
+            answer = "\n\n".join(snippets[:5])
+
+        print(f"✅ Agent 2 complete: {len(web_sources)} web sources found (Tavily)")
+
+        return {
+            'answer': answer,
+            'web_sources': web_sources
+        }
+
+    except Exception as e:
+        print(f"❌ Agent 2 error (Tavily): {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            'answer': "Web search temporarily unavailable. Please try again.",
+            'web_sources': []
+        }
+
+
+# ===== AGENT 2: WEB SEARCH (GEMINI / DISPATCHER) =====
+async def search_web_only(query: str, conversation_history: List[Dict] = None) -> dict:
+    """Agent 2: Search web using configured provider (Gemini or Tavily)
+
+    Args:
+        query: The current question to search
+        conversation_history: Optional list of previous Q&A pairs for context
+    """
+    # Dispatch to Tavily if configured
+    if WEB_SEARCH_PROVIDER == "tavily":
+        return await search_web_tavily(query, conversation_history)
+
     print(f"🌐 Agent 2: Searching web with grounding...")
     if conversation_history:
         print(f"   💬 Using conversation context ({len(conversation_history)} previous exchanges)")

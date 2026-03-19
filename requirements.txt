@@ -164,6 +164,7 @@ storage3==2.25.1
 streamlit==1.52.1
 StrEnum==0.4.15
 supabase==2.25.1
+tavily-python==0.5.0
 supabase-auth==2.25.1
 supabase-functions==2.25.1
 sympy==1.14.0
