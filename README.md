@@ -41,6 +41,14 @@ flowchart TD
 
 EcoComply AI helps landowners maintain environmental compliance by searching an internal database of 67 federal and state regulatory documents alongside real-time web sources. A multi-agent system performs gap analysis between internal knowledge and current regulations, automatically flagging when the knowledge base needs updating. The admin dashboard surfaces these gaps with priority-ranked URL recommendations for database expansion.
 
+## Why This Exists
+
+Environmental compliance is a moving target. Regulations change, court decisions alter what's enforceable, and the documents that govern what a landowner can or can't do are scattered across dozens of federal and state agencies.
+
+EcoComply was built for a real estate team that needed to get smarter about environmental compliance — faster than reading every existing regulatory document. But the deeper goal wasn't just to answer questions. It was to build a system that improves as the team uses it.
+
+Every query the system can't answer well becomes a signal. The gap analysis agents automatically identify what's missing from the knowledge base and surface the exact sources needed to fill it. **The more the team asks, the more complete the system becomes. The knowledge builds itself.**
+
 ## Tech Stack
 
 - **FastAPI** — REST API backend with async background processing
@@ -51,6 +59,21 @@ EcoComply AI helps landowners maintain environmental compliance by searching an 
 - **OpenAI text-embedding-3-large** — Document embeddings (via OpenRouter)
 - **Supabase** — Database, authentication, and document management
 - **Lovable** — Frontend UI with user query interface and admin dashboard
+
+## How It Works
+
+The `/agent` endpoint runs two paths in parallel:
+
+- **Fast path** — Google Gemini 2.5 Flash performs a live web search and returns a response in 2–5 seconds
+- **Background path** — Searches the local ChromaDB vector store (~77k indexed regulatory document chunks), runs a gap analysis comparing RAG vs. web results, and queues recommended documents for admin review if gaps are found
+
+A background worker polls Supabase every 60 seconds for newly approved documents and ingests them into ChromaDB automatically.
+
+**Key files:**
+- `backend/main.py` — FastAPI server & endpoints
+- `backend/simple_agent.py` — 4-agent orchestration
+- `backend/landrag.py` — RAG system & vector store
+- `backend/document_worker.py` — Background ingestion worker
 
 ## Usage Examples
 
@@ -112,6 +135,70 @@ EcoComply AI helps landowners maintain environmental compliance by searching an 
 - **95% excellent-to-perfect** search agent evaluation scores (assessed by Google Gemini 3 Pro)
 - **128 test runs** completed during development and validation
 - **3-tier gap detection** (GREEN / YELLOW / RED) automatically identifies knowledge base gaps
+
+## Local Setup
+
+**Prerequisites**
+- Python 3.10+
+- API keys for: OpenRouter, Mistral, Google (Gemini), and Supabase project credentials
+
+**1. Install dependencies**
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+```
+
+**2. Configure environment**
+
+```bash
+cp .env.example .env
+```
+
+Fill in `.env` with your credentials:
+
+```env
+OPENROUTER_API_KEY=...
+MISTRAL_API_KEY=...
+GOOGLE_API_KEY=...
+SUPABASE_URL=...
+SUPABASE_KEY=...
+```
+
+**3. Start the backend**
+
+```bash
+cd backend
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+You should see:
+
+```
+🚀 Starting Land Compliance RAG API...
+[WORKER] 🚀 Document ingestion worker started
+INFO:     Uvicorn running on http://0.0.0.0:8000
+```
+
+**4. Verify it's running**
+
+```bash
+curl http://localhost:8000/health
+# {"status": "ok"}
+```
+
+**5. Send a query**
+
+```bash
+curl -X POST http://localhost:8000/agent \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "What wetland permits do I need for construction near a stream?",
+    "user_id": "user-123",
+    "session_id": "session-456"
+  }'
+```
 
 ## Roadmap / Future Improvements
 
